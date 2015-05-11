@@ -14,32 +14,40 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
 
-        extractFiles()
+        extrectFiles()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+}
 
-    // MARK: Private
-    func extractFiles() {
+// MARK: Private
+private extension ViewController {
+    func extrectFiles() {
         let fileManager = NSFileManager.defaultManager()
-        let filePaths = ["System/Library/Audio/UISounds/", "Library/Ringtones/"]
+        let documentPath = documentDirectory()
 
-        if let documentPaths = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true) {
-            let documentPath = documentPaths.first as! String
+        fileManager.removeItemAtPath(documentPath, error: nil)
 
-            fileManager.removeItemAtPath(documentPath, error: nil)
+        let fromPaths = ["System/Library/Audio/UISounds/", "Library/Ringtones/"]
+        for fromPath in fromPaths {
+            let toPath = documentPath.stringByAppendingPathComponent(fromPath.lastPathComponent)
 
-            for filePath in filePaths {
-                let toPath = documentPath.stringByAppendingPathComponent(filePath.lastPathComponent)
-
-                if fileManager.copyItemAtPath(filePath, toPath: toPath, error: nil) {
-                    NSLog("\(toPath)")
-                }
+            var error: NSError?
+            if fileManager.copyItemAtPath(fromPath, toPath: toPath, error: &error) {
+                NSLog("\(toPath)")
+            } else {
+                NSLog("\(toPath)\n\(error)")
             }
         }
     }
-}
 
+    func documentDirectory() -> String {
+        let fileManager = NSFileManager.defaultManager()
+        let documentDirectories:NSArray = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
+
+        return documentDirectories.firstObject as! String
+    }
+}
